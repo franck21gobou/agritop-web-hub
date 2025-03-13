@@ -47,6 +47,9 @@ const Index = () => {
       observer.observe(section);
     });
     
+    // Change document title
+    document.title = "AGRITOP PRO SARL - Le TOP de l'Agriculture";
+    
     return () => {
       observer.disconnect();
     };

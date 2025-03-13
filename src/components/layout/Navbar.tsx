@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -40,11 +41,13 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <a href="/" className="flex items-center">
-            <div className="font-serif font-bold text-2xl text-agritop-green-700">
-              AGRITOP<span className="text-agritop-sun-600">PRO</span>
-            </div>
-          </a>
+          <Link to="/" className="flex items-center">
+            <img 
+              src="/lovable-uploads/b92ad846-54c5-4a7a-80b8-a47027827669.png" 
+              alt="AGRITOP PRO SARL" 
+              className="h-12 md:h-14"
+            />
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
@@ -114,9 +117,9 @@ const Navbar = () => {
 
           {/* Language switcher for desktop */}
           <div className="hidden md:block">
-            <a href="#contact" className="button-primary">
+            <Link to="/contact" className="button-primary">
               Demande de devis
-            </a>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -192,9 +195,9 @@ const Navbar = () => {
                 <Globe className="mr-1 h-4 w-4" />
                 {currentLanguage}
               </button>
-              <a href="#contact" className="button-primary text-sm">
+              <Link to="/contact" className="button-primary text-sm">
                 Demande de devis
-              </a>
+              </Link>
             </div>
           </nav>
         )}
