@@ -1,13 +1,22 @@
+
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, ChevronDown, Globe } from 'lucide-react';
+import { Menu, X, ChevronDown, Globe, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+
+interface Category {
+  id: number;
+  nom: string;
+}
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('FR');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const productsMenuRef = useRef<HTMLDivElement>(null);
   const productsButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -34,6 +43,22 @@ const Navbar = () => {
     };
     
     document.addEventListener('mousedown', handleClickOutside);
+    
+    // Fetch categories for the dropdown menu
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('https://agritop.pro/api-agritop.php');
+        if (response.data && Array.isArray(response.data.categories)) {
+          setCategories(response.data.categories);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchCategories();
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -65,12 +90,12 @@ const Navbar = () => {
           </Link>
 
           <nav className="hidden md:flex items-center space-x-8">
-            <a
-              href="/"
+            <Link
+              to="/"
               className="text-agritop-green-900 hover:text-agritop-green-600 font-medium transition-colors"
             >
               Accueil
-            </a>
+            </Link>
             <a
               href="#about"
               className="text-agritop-green-900 hover:text-agritop-green-600 font-medium transition-colors"
@@ -91,30 +116,23 @@ const Navbar = () => {
                   ref={productsMenuRef}
                   className="absolute top-10 -left-4 bg-white shadow-lg rounded-md py-2 w-48 animate-fade-in z-50"
                 >
-                  <a
-                    href="#cereals"
-                    className="block px-4 py-2 hover:bg-agritop-green-50 text-agritop-green-900"
-                  >
-                    Céréales
-                  </a>
-                  <a
-                    href="#fruits"
-                    className="block px-4 py-2 hover:bg-agritop-green-50 text-agritop-green-900"
-                  >
-                    Fruits
-                  </a>
-                  <a
-                    href="#nuts"
-                    className="block px-4 py-2 hover:bg-agritop-green-50 text-agritop-green-900"
-                  >
-                    Noix
-                  </a>
-                  <a
-                    href="#legumes"
-                    className="block px-4 py-2 hover:bg-agritop-green-50 text-agritop-green-900"
-                  >
-                    Légumineuses
-                  </a>
+                  {loading ? (
+                    <div className="px-4 py-2 text-agritop-green-900 flex items-center">
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Chargement...
+                    </div>
+                  ) : (
+                    categories.map(category => (
+                      <Link
+                        key={category.id}
+                        to={`/category/${category.id}`}
+                        className="block px-4 py-2 hover:bg-agritop-green-50 text-agritop-green-900"
+                        onClick={() => setIsProductsOpen(false)}
+                      >
+                        {category.nom}
+                      </Link>
+                    ))
+                  )}
                 </div>
               )}
             </div>
@@ -149,15 +167,17 @@ const Navbar = () => {
 
         {isMenuOpen && (
           <nav className="md:hidden mt-4 pb-4 animate-fade-in">
-            <a
-              href="/"
+            <Link
+              to="/"
               className="block py-2 text-agritop-green-900 hover:text-agritop-green-600 font-medium"
+              onClick={() => setIsMenuOpen(false)}
             >
               Accueil
-            </a>
+            </Link>
             <a
               href="#about"
               className="block py-2 text-agritop-green-900 hover:text-agritop-green-600 font-medium"
+              onClick={() => setIsMenuOpen(false)}
             >
               À propos
             </a>
@@ -170,35 +190,32 @@ const Navbar = () => {
             </button>
             {isProductsOpen && (
               <div className="pl-4 mt-1 border-l-2 border-agritop-green-100">
-                <a
-                  href="#cereals"
-                  className="block py-2 text-agritop-green-900 hover:text-agritop-green-600"
-                >
-                  Céréales
-                </a>
-                <a
-                  href="#fruits"
-                  className="block py-2 text-agritop-green-900 hover:text-agritop-green-600"
-                >
-                  Fruits
-                </a>
-                <a
-                  href="#nuts"
-                  className="block py-2 text-agritop-green-900 hover:text-agritop-green-600"
-                >
-                  Noix
-                </a>
-                <a
-                  href="#legumes"
-                  className="block py-2 text-agritop-green-900 hover:text-agritop-green-600"
-                >
-                  Légumineuses
-                </a>
+                {loading ? (
+                  <div className="py-2 text-agritop-green-900 flex items-center">
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Chargement...
+                  </div>
+                ) : (
+                  categories.map(category => (
+                    <Link
+                      key={category.id}
+                      to={`/category/${category.id}`}
+                      className="block py-2 text-agritop-green-900 hover:text-agritop-green-600"
+                      onClick={() => {
+                        setIsProductsOpen(false);
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      {category.nom}
+                    </Link>
+                  ))
+                )}
               </div>
             )}
             <a
               href="#contact"
               className="block py-2 text-agritop-green-900 hover:text-agritop-green-600 font-medium"
+              onClick={() => setIsMenuOpen(false)}
             >
               Contact
             </a>
@@ -210,7 +227,11 @@ const Navbar = () => {
                 <Globe className="mr-1 h-4 w-4" />
                 {currentLanguage}
               </button>
-              <Link to="/contact" className="button-primary text-sm">
+              <Link 
+                to="/contact" 
+                className="button-primary text-sm"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Demande de devis
               </Link>
             </div>
