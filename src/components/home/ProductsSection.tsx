@@ -17,20 +17,38 @@ interface ProductData {
   category: string;
 }
 
+interface CategoryData {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+}
+
 const ProductsSection = () => {
-  const [activeCategory, setActiveCategory] = useState(productCategories[0].id);
+  const [activeCategory, setActiveCategory] = useState('all');
   const navigate = useNavigate();
   
-  // Fetch products from API
-  const { data: apiProducts, isLoading } = useQuery({
-    queryKey: ['products'],
+  // Fetch products and categories from API
+  const { data: apiData, isLoading } = useQuery({
+    queryKey: ['products-categories'],
     queryFn: async () => {
       try {
         const response = await axios.get('https://agritop.pro/api-agritop.php');
         
         if (response.data && response.data.reponse && response.data.reponse.data) {
-          // Map API data to our product structure
-          return response.data.reponse.data.map((item: any) => ({
+          // Extract categories and products from API response
+          const apiCategories = response.data.reponse.categories || [];
+          const apiProducts = response.data.reponse.data || [];
+          
+          // Map API data to our structures
+          const categories = apiCategories.map((item: any) => ({
+            id: item.id || `category-${item.name}`,
+            name: item.name || '',
+            description: item.description || '',
+            icon: item.icon || 'Wheat'
+          }));
+          
+          const products = apiProducts.map((item: any) => ({
             id: parseInt(item.id),
             name: item.name || item.titre || '',
             description: item.description || '',
@@ -38,27 +56,38 @@ const ProductsSection = () => {
             imageUrl: item.imageUrl || item.image || '/placeholder.svg',
             category: item.category || item.categorie || 'Produit agricole'
           }));
+          
+          return { categories, products };
         }
-        return [];
+        return { categories: [], products: [] };
       } catch (error) {
-        console.error('Error fetching products:', error);
-        return [];
+        console.error('Error fetching data:', error);
+        return { categories: [], products: [] };
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
-  // Use local data as fallback
-  const products = apiProducts && apiProducts.length > 0 
-    ? apiProducts 
+  // Use API data or fall back to local data
+  const categories = apiData?.categories && apiData.categories.length > 0 
+    ? apiData.categories 
+    : productCategories;
+    
+  const products = apiData?.products && apiData.products.length > 0 
+    ? apiData.products 
     : productCategories.flatMap(cat => cat.products);
+  
+  // Set initial active category if not set
+  if (activeCategory === 'all' && categories && categories.length > 0) {
+    setActiveCategory(categories[0].id);
+  }
   
   // Filter products by active category
   const activeProducts = activeCategory === 'all' 
     ? products 
     : products.filter(product => {
-        const category = productCategories.find(cat => cat.id === activeCategory);
-        return category ? category.name === product.category : false;
+        const category = categories.find(cat => cat.id === activeCategory);
+        return category ? product.category === category.name : false;
       });
 
   // Handle product click to navigate to product detail page
@@ -93,7 +122,7 @@ const ProductsSection = () => {
         
         {/* Categories */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {productCategories.map((category) => (
+          {categories.map((category) => (
             <div key={category.id}>
               <CategoryCard
                 name={category.name}
