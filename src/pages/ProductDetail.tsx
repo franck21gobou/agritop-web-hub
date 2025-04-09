@@ -1,11 +1,50 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { ArrowLeft, Truck, ShieldCheck, Calendar, Send } from 'lucide-react';
-import { productCategories } from '@/data/products';
 import { toast } from '@/components/ui/use-toast';
+import axios from 'axios';
+
+interface ProductData {
+  id: number;
+  name: string;
+  description: string;
+  origin: string;
+  imageUrl: string;
+  category: string;
+}
+
+// Function to fetch product data from the API
+const fetchProductData = async (productId: string): Promise<ProductData | null> => {
+  try {
+    const response = await axios.get('https://agritop.pro/api-agritop.php');
+    
+    if (response.data && response.data.reponse && response.data.reponse.data) {
+      // Find the product with the matching ID
+      const product = response.data.reponse.data.find(
+        (item: any) => item.id.toString() === productId
+      );
+      
+      if (product) {
+        return {
+          id: parseInt(product.id),
+          name: product.name || product.titre || '',
+          description: product.description || '',
+          origin: product.origin || product.origine || 'Côte d\'Ivoire',
+          imageUrl: product.imageUrl || product.image || '/placeholder.svg',
+          category: product.category || product.categorie || 'Produit agricole'
+        };
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching product data:', error);
+    throw new Error('Failed to fetch product data');
+  }
+};
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -13,10 +52,6 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [deliveryDate, setDeliveryDate] = useState("");
   const [loading, setLoading] = useState(false);
-  
-  // Find the product across all categories
-  const allProducts = productCategories.flatMap(category => category.products);
-  const product = allProducts.find(p => p.id.toString() === productId);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -27,12 +62,21 @@ const ProductDetail = () => {
     message: '',
   });
   
+  // Fetch product data using React Query
+  const { data: product, isLoading, isError } = useQuery({
+    queryKey: ['product', productId],
+    queryFn: () => fetchProductData(productId || ''),
+    enabled: !!productId,
+  });
+  
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
-    
-    // If product not found, redirect to homepage
-    if (!product && productId) {
+  }, []);
+  
+  useEffect(() => {
+    // If there's an error or product not found after loading, redirect to homepage
+    if (isError || (!isLoading && !product)) {
       navigate('/');
       toast({
         title: "Produit non trouvé",
@@ -40,7 +84,7 @@ const ProductDetail = () => {
         variant: "destructive"
       });
     }
-  }, [product, productId, navigate]);
+  }, [isError, product, isLoading, navigate]);
   
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -61,8 +105,25 @@ const ProductDetail = () => {
     }, 1500);
   };
   
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-grow pt-24 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-agritop-green-500 border-r-transparent"></div>
+            <p className="mt-4 text-agritop-earth-700">Chargement du produit...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+  
+  // If product is not found or there's an error
   if (!product) {
-    return null;
+    return null; // Will redirect via useEffect
   }
   
   return (
