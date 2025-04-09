@@ -8,20 +8,9 @@ interface ProductCardProps {
   origin: string;
   imageUrl: string;
   category: string;
-  productId: string;
-  onSpecsClick: () => void;
-  onQuoteClick: () => void;
 }
 
-const ProductCard = ({ 
-  name, 
-  description, 
-  origin, 
-  imageUrl, 
-  category, 
-  onSpecsClick,
-  onQuoteClick
-}: ProductCardProps) => {
+const ProductCard = ({ name, description, origin, imageUrl, category }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
@@ -56,23 +45,11 @@ const ProductCard = ({
         <h3 className="text-xl font-bold text-agritop-green-800 mb-2">{name}</h3>
         <p className="text-agritop-earth-700 text-sm mb-4">{description}</p>
         <div className="flex justify-between items-center">
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              onSpecsClick();
-            }}
-            className="inline-flex items-center text-agritop-green-600 hover:text-agritop-green-800 font-medium text-sm"
-          >
+          <button className="inline-flex items-center text-agritop-green-600 hover:text-agritop-green-800 font-medium text-sm">
             <Info className="h-4 w-4 mr-1" />
             Spécifications
           </button>
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              onQuoteClick();
-            }}
-            className="inline-flex items-center text-agritop-sun-600 hover:text-agritop-sun-800 font-medium text-sm"
-          >
+          <button className="inline-flex items-center text-agritop-sun-600 hover:text-agritop-sun-800 font-medium text-sm">
             <ExternalLink className="h-4 w-4 mr-1" />
             Demander un devis
           </button>

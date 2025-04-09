@@ -1,15 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('FR');
-  const productsMenuRef = useRef<HTMLDivElement>(null);
-  const productsButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,23 +19,8 @@ const Navbar = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
-    
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        productsMenuRef.current && 
-        !productsMenuRef.current.contains(event.target as Node) &&
-        productsButtonRef.current && 
-        !productsButtonRef.current.contains(event.target as Node)
-      ) {
-        setIsProductsOpen(false);
-      }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -56,14 +39,14 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
-          <Link to="/" className="flex items-center">
-            <img 
-              src="/lovable-uploads/b92ad846-54c5-4a7a-80b8-a47027827669.png" 
-              alt="AGRITOP PRO SARL" 
-              className="h-12 md:h-14"
-            />
-          </Link>
+          {/* Logo */}
+          <a href="/" className="flex items-center">
+            <div className="font-serif font-bold text-2xl text-agritop-green-700">
+              AGRITOP<span className="text-agritop-sun-600">PRO</span>
+            </div>
+          </a>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <a
               href="/"
@@ -79,7 +62,6 @@ const Navbar = () => {
             </a>
             <div className="relative">
               <button
-                ref={productsButtonRef}
                 className="flex items-center text-agritop-green-900 hover:text-agritop-green-600 font-medium transition-colors"
                 onClick={() => setIsProductsOpen(!isProductsOpen)}
               >
@@ -87,10 +69,7 @@ const Navbar = () => {
                 <ChevronDown className="ml-1 h-4 w-4" />
               </button>
               {isProductsOpen && (
-                <div 
-                  ref={productsMenuRef}
-                  className="absolute top-10 -left-4 bg-white shadow-lg rounded-md py-2 w-48 animate-fade-in z-50"
-                >
+                <div className="absolute top-10 -left-4 bg-white shadow-lg rounded-md py-2 w-48 animate-fade-in">
                   <a
                     href="#cereals"
                     className="block px-4 py-2 hover:bg-agritop-green-50 text-agritop-green-900"
@@ -133,12 +112,14 @@ const Navbar = () => {
             </button>
           </nav>
 
+          {/* Language switcher for desktop */}
           <div className="hidden md:block">
-            <Link to="/contact" className="button-primary">
+            <a href="#contact" className="button-primary">
               Demande de devis
-            </Link>
+            </a>
           </div>
 
+          {/* Mobile menu button */}
           <button
             className="md:hidden text-agritop-green-900"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -147,6 +128,7 @@ const Navbar = () => {
           </button>
         </div>
 
+        {/* Mobile Navigation */}
         {isMenuOpen && (
           <nav className="md:hidden mt-4 pb-4 animate-fade-in">
             <a
@@ -210,9 +192,9 @@ const Navbar = () => {
                 <Globe className="mr-1 h-4 w-4" />
                 {currentLanguage}
               </button>
-              <Link to="/contact" className="button-primary text-sm">
+              <a href="#contact" className="button-primary text-sm">
                 Demande de devis
-              </Link>
+              </a>
             </div>
           </nav>
         )}
