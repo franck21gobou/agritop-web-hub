@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import ProductCard from '../ui/ProductCard';
@@ -124,6 +124,9 @@ const ProductsSection = () => {
                   origin={product.origin}
                   imageUrl={product.imageUrl}
                   category={product.category}
+                  productId={product.id.toString()}
+                  onSpecsClick={() => handleProductClick(product.id)}
+                  onQuoteClick={() => handleProductClick(product.id)}
                 />
               </div>
             ))}

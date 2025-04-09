@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { Info, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 interface ProductCardProps {
   name: string;
@@ -9,17 +8,22 @@ interface ProductCardProps {
   origin: string;
   imageUrl: string;
   category: string;
+  productId: string;
+  onSpecsClick: () => void;
+  onQuoteClick: () => void;
 }
 
-const ProductCard = ({ name, description, origin, imageUrl, category }: ProductCardProps) => {
+const ProductCard = ({ 
+  name, 
+  description, 
+  origin, 
+  imageUrl, 
+  category, 
+  onSpecsClick,
+  onQuoteClick
+}: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
-
-  // Get the product ID from the name to use in the route
-  const getProductIdFromImageUrl = () => {
-    const match = imageUrl.match(/photo-(\d+)-/);
-    return match ? match[1] : '1';
-  };
 
   return (
     <div 
@@ -52,22 +56,26 @@ const ProductCard = ({ name, description, origin, imageUrl, category }: ProductC
         <h3 className="text-xl font-bold text-agritop-green-800 mb-2">{name}</h3>
         <p className="text-agritop-earth-700 text-sm mb-4">{description}</p>
         <div className="flex justify-between items-center">
-          <Link 
-            to={`/product/${getProductIdFromImageUrl()}`}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onSpecsClick();
+            }}
             className="inline-flex items-center text-agritop-green-600 hover:text-agritop-green-800 font-medium text-sm"
-            onClick={(e) => e.stopPropagation()}
           >
             <Info className="h-4 w-4 mr-1" />
             Spécifications
-          </Link>
-          <Link 
-            to={`/product/${getProductIdFromImageUrl()}`}
+          </button>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onQuoteClick();
+            }}
             className="inline-flex items-center text-agritop-sun-600 hover:text-agritop-sun-800 font-medium text-sm"
-            onClick={(e) => e.stopPropagation()}
           >
             <ExternalLink className="h-4 w-4 mr-1" />
             Demander un devis
-          </Link>
+          </button>
         </div>
       </div>
     </div>
