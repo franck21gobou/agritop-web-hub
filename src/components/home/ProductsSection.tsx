@@ -61,6 +61,11 @@ const ProductsSection = () => {
         return category ? category.name === product.category : false;
       });
 
+  // Handle product click to navigate to product detail page
+  const handleProductClick = (productId: number) => {
+    navigate(`/product/${productId}`);
+  };
+
   // Render the appropriate icon based on the category
   const renderIcon = (iconName: string) => {
     switch (iconName) {
@@ -75,10 +80,6 @@ const ProductsSection = () => {
       default:
         return <Wheat className="h-6 w-6 text-agritop-green-600" />;
     }
-  };
-
-  const handleProductClick = (productId: number) => {
-    navigate(`/product/${productId}`);
   };
 
   return (
