@@ -17,38 +17,20 @@ interface ProductData {
   category: string;
 }
 
-interface CategoryData {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-}
-
 const ProductsSection = () => {
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState(productCategories[0].id);
   const navigate = useNavigate();
   
-  // Fetch products and categories from API
-  const { data: apiData, isLoading } = useQuery({
-    queryKey: ['products-categories'],
+  // Fetch products from API
+  const { data: apiProducts, isLoading } = useQuery({
+    queryKey: ['products'],
     queryFn: async () => {
       try {
         const response = await axios.get('https://agritop.pro/api-agritop.php');
         
         if (response.data && response.data.reponse && response.data.reponse.data) {
-          // Extract categories and products from API response
-          const apiCategories = response.data.reponse.categories || [];
-          const apiProducts = response.data.reponse.data || [];
-          
-          // Map API data to our structures
-          const categories = apiCategories.map((item: any) => ({
-            id: item.id || `category-${item.name}`,
-            name: item.name || '',
-            description: item.description || '',
-            icon: item.icon || 'Wheat'
-          }));
-          
-          const products = apiProducts.map((item: any) => ({
+          // Map API data to our product structure
+          return response.data.reponse.data.map((item: any) => ({
             id: parseInt(item.id),
             name: item.name || item.titre || '',
             description: item.description || '',
@@ -56,44 +38,28 @@ const ProductsSection = () => {
             imageUrl: item.imageUrl || item.image || '/placeholder.svg',
             category: item.category || item.categorie || 'Produit agricole'
           }));
-          
-          return { categories, products };
         }
-        return { categories: [], products: [] };
+        return [];
       } catch (error) {
-        console.error('Error fetching data:', error);
-        return { categories: [], products: [] };
+        console.error('Error fetching products:', error);
+        return [];
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
-  // Use API data or fall back to local data
-  const categories = apiData?.categories && apiData.categories.length > 0 
-    ? apiData.categories 
-    : productCategories;
-    
-  const products = apiData?.products && apiData.products.length > 0 
-    ? apiData.products 
+  // Use local data as fallback
+  const products = apiProducts && apiProducts.length > 0 
+    ? apiProducts 
     : productCategories.flatMap(cat => cat.products);
-  
-  // Set initial active category if not set
-  if (activeCategory === 'all' && categories && categories.length > 0) {
-    setActiveCategory(categories[0].id);
-  }
   
   // Filter products by active category
   const activeProducts = activeCategory === 'all' 
     ? products 
     : products.filter(product => {
-        const category = categories.find(cat => cat.id === activeCategory);
-        return category ? product.category === category.name : false;
+        const category = productCategories.find(cat => cat.id === activeCategory);
+        return category ? category.name === product.category : false;
       });
-
-  // Handle product click to navigate to product detail page
-  const handleProductClick = (productId: number) => {
-    navigate(`/product/${productId}`);
-  };
 
   // Render the appropriate icon based on the category
   const renderIcon = (iconName: string) => {
@@ -111,6 +77,10 @@ const ProductsSection = () => {
     }
   };
 
+  const handleProductClick = (productId: number) => {
+    navigate(`/product/${productId}`);
+  };
+
   return (
     <section id="products" className="py-20 bg-agritop-green-50">
       <div className="section-container">
@@ -122,7 +92,7 @@ const ProductsSection = () => {
         
         {/* Categories */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {categories.map((category) => (
+          {productCategories.map((category) => (
             <div key={category.id}>
               <CategoryCard
                 name={category.name}
