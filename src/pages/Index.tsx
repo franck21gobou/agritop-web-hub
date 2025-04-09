@@ -26,33 +26,8 @@ const Index = () => {
       });
     });
     
-    // Initialize intersection observer for animations
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const animatedElements = entry.target.querySelectorAll('.animate-on-scroll');
-            animatedElements.forEach((el, index) => {
-              setTimeout(() => {
-                el.classList.add('animate-fade-up');
-              }, index * 100);
-            });
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-    
-    document.querySelectorAll('section').forEach(section => {
-      observer.observe(section);
-    });
-    
     // Change document title
     document.title = "AGRITOP PRO SARL - Le TOP de l'Agriculture";
-    
-    return () => {
-      observer.disconnect();
-    };
   }, []);
   
   return (
