@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Menu, X, ChevronDown, Globe, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { agritopData } from '@/data/agritopData';
 
 interface Category {
   id: number;
@@ -15,7 +15,7 @@ const Navbar = () => {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('FR');
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const productsMenuRef = useRef<HTMLDivElement>(null);
   const productsButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -42,23 +42,9 @@ const Navbar = () => {
     };
     
     document.addEventListener('mousedown', handleClickOutside);
-    
-    // Fetch categories for the dropdown menu
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get('https://agritop.pro/api-agritop.php');
-        if (response.data && Array.isArray(response.data.categories)) {
-          setCategories(response.data.categories);
-        }
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchCategories();
-    
+
+    setCategories(agritopData.categories);
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);

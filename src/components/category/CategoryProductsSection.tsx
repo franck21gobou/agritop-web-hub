@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProductCard from '../ui/ProductCard';
 import { Loader2 } from 'lucide-react';
-import axios from 'axios';
+import { agritopData } from '@/data/agritopData';
 
 interface CategoryProductsSectionProps {
   categoryId?: string;
@@ -32,49 +32,40 @@ const CategoryProductsSection = ({ categoryId }: CategoryProductsSectionProps) =
   const navigate = useNavigate();
   
   useEffect(() => {
-    const fetchCategoryData = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('https://agritop.pro/api-agritop.php');
-        
-        if (response.data && Array.isArray(response.data.categories)) {
-          const category = response.data.categories.find((cat: any) => cat.id.toString() === categoryId);
-          
-          if (category) {
-            setCategoryInfo(category);
-            
-            // Find products for this category
-            if (Array.isArray(response.data.produits)) {
-              const filteredProducts = response.data.produits
-                .filter((product: any) => product.categorie_id.toString() === categoryId)
-                .map((product: any) => ({
-                  id: product.id,
-                  name: product.nom,
-                  description: product.description || "Description non disponible",
-                  origin: product.origine || "Côte d'Ivoire",
-                  imageUrl: product.image || "/placeholder.svg",
-                  category: category.nom
-                }));
-              
-              setCategoryProducts(filteredProducts);
-            }
-          } else {
-            setError("Catégorie non trouvée");
-            navigate('/');
-          }
-        } else {
-          setError("Format de données invalide");
-        }
-      } catch (err) {
-        console.error("Erreur lors du chargement des données:", err);
-        setError("Erreur lors du chargement des données");
-      } finally {
-        setLoading(false);
+    if (!categoryId) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const category = agritopData.categories.find(
+        (cat) => cat.id.toString() === categoryId
+      );
+
+      if (category) {
+        setCategoryInfo(category);
+
+        const filteredProducts = agritopData.produits
+          .filter((product) => product.categorie_id.toString() === categoryId)
+          .map((product) => ({
+            id: product.id,
+            name: product.nom,
+            description: product.description || "Description non disponible",
+            origin: product.origine || "Côte d'Ivoire",
+            imageUrl: product.image || "/placeholder.svg",
+            category: category.nom,
+          }));
+
+        setCategoryProducts(filteredProducts);
+      } else {
+        setError("Catégorie non trouvée");
+        navigate('/');
       }
-    };
-    
-    if (categoryId) {
-      fetchCategoryData();
+    } catch (err) {
+      console.error("Erreur lors du chargement des données:", err);
+      setError("Erreur lors du chargement des données");
+    } finally {
+      setLoading(false);
     }
   }, [categoryId, navigate]);
   
