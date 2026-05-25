@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ProductCard from '../ui/ProductCard';
 import CategoryCard from '../ui/CategoryCard';
 import { Wheat, Apple, Nut, LeafyGreen, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import { agritopData } from '@/data/agritopData';
 
 interface Product {
   id: number;
@@ -29,66 +29,51 @@ const ProductsSection = () => {
   const [products, setProducts] = useState<Record<number, Product[]>>({});
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('https://agritop.pro/api-agritop.php');
-        
-        if (response.data) {
-          // Process categories
-          if (Array.isArray(response.data.categories)) {
-            const mappedCategories = response.data.categories.map((cat: any) => ({
-              id: cat.id,
-              name: cat.nom,
-              description: cat.description || "Produits de qualité",
-              icon: getCategoryIcon(cat.nom)
-            }));
-            
-            setCategories(mappedCategories);
-            
-            if (mappedCategories.length > 0) {
-              setActiveCategory(mappedCategories[0].id);
-            }
-            
-            // Process products by category
-            const productsByCategory: Record<number, Product[]> = {};
-            
-            if (Array.isArray(response.data.produits)) {
-              response.data.produits.forEach((product: any) => {
-                const categoryId = parseInt(product.categorie_id);
-                const category = response.data.categories.find((c: any) => c.id === categoryId);
-                
-                const formattedProduct = {
-                  id: product.id,
-                  name: product.nom,
-                  description: product.description || "Description non disponible",
-                  origin: product.origine || "Côte d'Ivoire",
-                  imageUrl: product.image || "/placeholder.svg",
-                  category: category ? category.nom : "Divers"
-                };
-                
-                if (!productsByCategory[categoryId]) {
-                  productsByCategory[categoryId] = [];
-                }
-                
-                productsByCategory[categoryId].push(formattedProduct);
-              });
-            }
-            
-            setProducts(productsByCategory);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("Erreur lors du chargement des données");
-      } finally {
-        setLoading(false);
+    try {
+      const mappedCategories = agritopData.categories.map((cat) => ({
+        id: cat.id,
+        name: cat.nom,
+        description: cat.description || "Produits de qualité",
+        icon: getCategoryIcon(cat.nom),
+      }));
+
+      setCategories(mappedCategories);
+
+      if (mappedCategories.length > 0) {
+        setActiveCategory(mappedCategories[0].id);
       }
-    };
-    
-    fetchData();
+
+      const productsByCategory: Record<number, Product[]> = {};
+
+      agritopData.produits.forEach((product) => {
+        const categoryId = product.categorie_id;
+        const category = agritopData.categories.find((c) => c.id === categoryId);
+
+        const formattedProduct: Product = {
+          id: product.id,
+          name: product.nom,
+          description: product.description || "Description non disponible",
+          origin: product.origine || "Côte d'Ivoire",
+          imageUrl: product.image || "/placeholder.svg",
+          category: category ? category.nom : "Divers",
+        };
+
+        if (!productsByCategory[categoryId]) {
+          productsByCategory[categoryId] = [];
+        }
+
+        productsByCategory[categoryId].push(formattedProduct);
+      });
+
+      setProducts(productsByCategory);
+    } catch (err) {
+      console.error("Error loading data:", err);
+      setError("Erreur lors du chargement des données");
+    } finally {
+      setLoading(false);
+    }
   }, []);
   
   // Get appropriate icon based on category name
